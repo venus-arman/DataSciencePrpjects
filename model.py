@@ -1,5 +1,6 @@
 import os
 import speech_recognition as sr
+import pickle
 
 
 class Model_Voice_Text():
@@ -30,5 +31,11 @@ class Model_Voice_Text():
         return(text_list)
     
 model = Model_Voice_Text()
-path = "C:/Users/syous/OneDrive/Documents/Freelance projects/DataSciencePrpjects/Voice records/"
-model.voice_to_text(path)
+# path = "C:/Users/syous/OneDrive/Documents/Freelance projects/DataSciencePrpjects/Voice records/"
+# model.voice_to_text(path)
+
+pickle.dump(model, open("voice_txt.pkl", "wb"))
+
+
+
+
