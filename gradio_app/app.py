@@ -1,5 +1,5 @@
-import os
-import speech_recognition as sr
+# import os
+# import speech_recognition as sr
 # import pickle
 # import nltk
 # from nltk.corpus import wordnet
@@ -7,7 +7,7 @@ import speech_recognition as sr
 import difflib
 import gradio as gr
 from transformers import pipeline
-import numpy as np
+# import numpy as np
 
 transcriber = pipeline("automatic-speech-recognition", model="openai/whisper-base")
 
@@ -24,7 +24,7 @@ class Model_Voice_Text():
     #open and read the file after the appending:
 
     def __init__(self) -> None:
-        self.SR_obj = sr.Recognizer()
+        # self.SR_obj = sr.Recognizer()
         self.KEYWORDS = ['suicide', 'urgent', 'poor', 'in-need', 'old', 'pregnant', 'refugee', 'new immigrant', 'patient', 'ill', 'sick', 'anxiety', 'anxious']
         # self.fuzzer = fuzz.Fuzz()
     
@@ -89,26 +89,26 @@ class Model_Voice_Text():
         #     return match_results
 
    
-    def voice_to_text(self, voicefolder):
-        SR_obj = self.SR_obj
-        text_list = []
-        res_list = []
+    # def voice_to_text(self, voicefolder):
+    #     SR_obj = self.SR_obj
+    #     text_list = []
+    #     res_list = []
 
-        for subdir, dirs, files in os.walk(voicefolder):
-            for file in files:
-                print(os.path.join(subdir, file))
-                info = sr.AudioFile(os.path.join(subdir, file))
-                print(info)
+    #     for subdir, dirs, files in os.walk(voicefolder):
+    #         for file in files:
+    #             print(os.path.join(subdir, file))
+    #             info = sr.AudioFile(os.path.join(subdir, file))
+    #             print(info)
        
-                with info as source:
-                    SR_obj.adjust_for_ambient_noise(source)
-                    audio_data = SR_obj.record(source,duration=100)
-                    result = SR_obj.recognize_google(audio_data)
-                    text_list.append(result)
-                    match_results = self.matching_text(result)
-                    res_list.append([file, match_results, result])
+    #             with info as source:
+    #                 SR_obj.adjust_for_ambient_noise(source)
+    #                 audio_data = SR_obj.record(source,duration=100)
+    #                 result = SR_obj.recognize_google(audio_data)
+    #                 text_list.append(result)
+    #                 match_results = self.matching_text(result)
+    #                 res_list.append([file, match_results, result])
 
-        return(text_list, res_list)
+    #     return(text_list, res_list)
 
 
 model = Model_Voice_Text()
