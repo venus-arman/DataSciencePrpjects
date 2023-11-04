@@ -1,5 +1,5 @@
-import os
-import speech_recognition as sr
+# import os
+# import speech_recognition as sr
 # import pickle
 # import nltk
 # from nltk.corpus import wordnet
@@ -7,8 +7,9 @@ import speech_recognition as sr
 import difflib
 import gradio as gr
 from transformers import pipeline
-import numpy as np
-transcriber = pipeline("automatic-speech-recognition", model="openai/whisper-base.en")
+# import numpy as np
+
+transcriber = pipeline("automatic-speech-recognition", model="openai/whisper-base")
 
 
 # nltk.download('wordnet')
@@ -23,7 +24,7 @@ class Model_Voice_Text():
     #open and read the file after the appending:
 
     def __init__(self) -> None:
-        self.SR_obj = sr.Recognizer()
+        # self.SR_obj = sr.Recognizer()
         self.KEYWORDS = ['suicide', 'urgent', 'poor', 'in-need', 'old', 'pregnant', 'refugee', 'new immigrant', 'patient', 'ill', 'sick', 'anxiety', 'anxious']
         # self.fuzzer = fuzz.Fuzz()
     
@@ -56,21 +57,26 @@ class Model_Voice_Text():
             count = self.find_similar_word_count(text, target_var)
             
             # matches = process.extract(text, word)
-            ret.append((target_var, count))
+            if count>0:
+                ret.append((target_var, count))
+        if ret == []:
+            ret.append("nothing found")
+        
+        ret.append(text)
         return ret
     
     def transcribe(self, audio):
-        sr, y = audio
-        y = y.astype(np.float32)
-        y /= np.max(np.abs(y))
+        # sr, y = audio
+        # y = y.astype(np.float32)
+        # y /= np.max(np.abs(y))
 
-        return transcriber({"sampling_rate": sr, "raw": y})["text"]
+        return transcriber(audio)["text"]
     
     def voice_to_text_s(self, audio):
         # SR_obj = self.SR_obj
         # info = sr.AudioFile(audio)
         tran_text = self.transcribe(audio)
-        match_results = self.matching_text(tran_text)
+        match_results = self.matching_text(tran_text.lower())
         return match_results
 
         # print(info)
@@ -83,26 +89,26 @@ class Model_Voice_Text():
         #     return match_results
 
    
-    def voice_to_text(self, voicefolder):
-        SR_obj = self.SR_obj
-        text_list = []
-        res_list = []
+    # def voice_to_text(self, voicefolder):
+    #     SR_obj = self.SR_obj
+    #     text_list = []
+    #     res_list = []
 
-        for subdir, dirs, files in os.walk(voicefolder):
-            for file in files:
-                print(os.path.join(subdir, file))
-                info = sr.AudioFile(os.path.join(subdir, file))
-                print(info)
+    #     for subdir, dirs, files in os.walk(voicefolder):
+    #         for file in files:
+    #             print(os.path.join(subdir, file))
+    #             info = sr.AudioFile(os.path.join(subdir, file))
+    #             print(info)
        
-                with info as source:
-                    SR_obj.adjust_for_ambient_noise(source)
-                    audio_data = SR_obj.record(source,duration=100)
-                    result = SR_obj.recognize_google(audio_data)
-                    text_list.append(result)
-                    match_results = self.matching_text(result)
-                    res_list.append([file, match_results, result])
+    #             with info as source:
+    #                 SR_obj.adjust_for_ambient_noise(source)
+    #                 audio_data = SR_obj.record(source,duration=100)
+    #                 result = SR_obj.recognize_google(audio_data)
+    #                 text_list.append(result)
+    #                 match_results = self.matching_text(result)
+    #                 res_list.append([file, match_results, result])
 
-        return(text_list, res_list)
+    #     return(text_list, res_list)
 
 
 model = Model_Voice_Text()
@@ -116,10 +122,25 @@ model = Model_Voice_Text()
 # df = pd.DataFrame(results)
 # df.to_csv("list.csv", index=False)
 
-gr.Interface(fn=model.voice_to_text_s,
-             inputs=gr.Audio(),
-             outputs=gr.Textbox(label="Output Box")).launch()
+demo = gr.Blocks()
 
+
+micro_ph = gr.Interface(fn=model.voice_to_text_s,
+             inputs=gr.Audio(source="microphone", type="filepath"),
+             outputs=gr.Textbox(label="Output Box"))
+
+file_ph = gr.Interface(fn=model.voice_to_text_s,
+             inputs=gr.Audio(source="upload", type="filepath"),
+             outputs=gr.Textbox(label="Output Box"))
+
+
+with demo:
+    gr.TabbedInterface(
+        [micro_ph, file_ph],
+        ["Transcribe Microphone", "Transcribe Audio File"],
+    )
+
+demo.launch(debug=True)
 
 # pickle.dump(model, open("voice_txt.pkl", "wb"))
 
