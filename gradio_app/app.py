@@ -3,7 +3,7 @@
 # import pickle
 # import nltk
 # from nltk.corpus import wordnet
-# import pandas as pd
+import pandas as pd
 import difflib
 import gradio as gr
 from transformers import pipeline
@@ -51,6 +51,9 @@ class Model_Voice_Text():
 
 
     def matching_text(self, text):
+        df = pd.DataFrame()
+        ph_num = '000'
+        sin = '0000'
         ret = []
         # words = nltk.word_tokenize(text)
         for target_var in self.KEYWORDS:
@@ -58,12 +61,22 @@ class Model_Voice_Text():
             
             # matches = process.extract(text, word)
             if count>0:
-                ret.append((target_var, count))
+                ret.append(target_var)
+                ret.append(count)
         if ret == []:
             ret.append("nothing found")
         
-        ret.append(text)
-        return ret
+        # initialize data of lists. 
+        data = {'Keywords': [ret], 
+                'Phone Number': ph_num,
+                'SIN': sin,
+                'text': text} 
+        df = pd.DataFrame(data)
+        print(text)
+        print(df)
+        
+        # ret.append(text)
+        return df
     
     def transcribe(self, audio):
         # sr, y = audio
@@ -127,11 +140,11 @@ demo = gr.Blocks()
 
 micro_ph = gr.Interface(fn=model.voice_to_text_s,
              inputs=gr.Audio(source="microphone", type="filepath"),
-             outputs=gr.Textbox(label="Output Box"))
+             outputs=gr.Dataframe(label="Output Box", interactive=True))
 
 file_ph = gr.Interface(fn=model.voice_to_text_s,
              inputs=gr.Audio(source="upload", type="filepath"),
-             outputs=gr.Textbox(label="Output Box"))
+             outputs=gr.Dataframe(label="Output Box", interactive=True))
 
 
 with demo:
