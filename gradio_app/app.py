@@ -7,6 +7,8 @@ import pandas as pd
 import difflib
 import gradio as gr
 from transformers import pipeline
+import librosa
+
 # import numpy as np
 
 transcriber = pipeline("automatic-speech-recognition", model="openai/whisper-base")
@@ -66,29 +68,61 @@ class Model_Voice_Text():
         if ret == []:
             ret.append("nothing found")
         
+
+        
         # initialize data of lists. 
         data = {'Keywords': [ret], 
                 'Phone Number': ph_num,
                 'SIN': sin,
                 'text': text} 
         df = pd.DataFrame(data)
-        print(text)
-        print(df)
         
         # ret.append(text)
         return df
     
-    def transcribe(self, audio):
+    def transcribe(self, audio_f):
         # sr, y = audio
         # y = y.astype(np.float32)
         # y /= np.max(np.abs(y))
+        # print(type(audio))
+        text = ""
 
-        return transcriber(audio)["text"]
+        # First load the file
+        audio, sr = librosa.load(audio_f)
+
+        # Get number of samples for 20 seconds; replace 20 by any number
+        buffer = 20 * sr
+
+        samples_total = len(audio)
+        samples_wrote = 0
+        counter = 1
+
+        while samples_wrote < samples_total:
+
+            #check if the buffer is not exceeding total samples 
+            if buffer > (samples_total - samples_wrote):
+                buffer = samples_total - samples_wrote
+
+            block = audio[samples_wrote : (samples_wrote + buffer)]
+            # out_filename = "split_" + str(counter) + "_" + audio_f
+
+            # Write 2 second segment
+            # sf.write(out_filename, block, sr)
+
+            # Transcribing the audio to text
+            text += transcriber(block)["text"]
+            counter += 1
+            samples_wrote += buffer
+            # print(counter)
+            # print(text)
+
+        return text
     
     def voice_to_text_s(self, audio):
         # SR_obj = self.SR_obj
         # info = sr.AudioFile(audio)
         tran_text = self.transcribe(audio)
+        # print(tran_text)
         match_results = self.matching_text(tran_text.lower())
         return match_results
 
