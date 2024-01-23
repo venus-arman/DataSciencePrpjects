@@ -1,0 +1,5 @@
+pandas==2.0.2
+gradio==3.50.2
+gradio_client==0.6.1
+transformers @ git+https://github.com/huggingface/transformers.git@5f3efdf762a5de89d354879d3d6bed689bbc73b7
+librosa==0.10.1
