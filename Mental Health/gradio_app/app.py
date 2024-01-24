@@ -5,13 +5,7 @@ from transformers import pipeline
 import librosa
 import re
 
-# import numpy as np
-
 transcriber = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3")
-
-
-# nltk.download('wordnet')
-
 
 
 class Model_Voice_Text():
@@ -24,6 +18,7 @@ class Model_Voice_Text():
     def __init__(self) -> None:
         # self.SR_obj = sr.Recognizer()
         self.KEYWORDS = ['suicide', 'urgent', 'poor', 'in-need', 'old', 'pregnant', 'refugee', 'new immigrant', 'patient', 'ill', 'sick', 'anxiety', 'anxious']
+        self.sins = [5678, 1967, 4530, 3986, 9750, 1065, 7134, 6410, 2906, 8056, 1307, 3503, 7708, 4980, 1248, 3491, 6157, 9242, 3198, 5632]
         # self.fuzzer = fuzz.Fuzz()
     
     # Define a function to find the number of times the word similar to the word stored in variable target_var, in a text stored in a variable named text_res
@@ -68,8 +63,13 @@ class Model_Voice_Text():
         matches = re.findall(sin_pattern, text)
         if matches:
             return matches 
-        else: return "0000"
+        else: return "Not detected"
 
+    def check_eligibility(self, sins_ex):
+        for number in sins_ex:
+            if number in self.sins:
+                return "Eligible"
+        return "Not Eligible"
 
     def matching_text(self, text):
         df = pd.DataFrame()
@@ -90,13 +90,14 @@ class Model_Voice_Text():
         ph_num = self.extract_phone_number(text=text)
 
         sin = self.extract_sin(text=text)
-        
 
+        eligib = self.check_eligibility(sins_ex=sin)
         
         # initialize data of lists. 
         data = {'Keywords': [ret], 
                 'Phone Number': ph_num,
                 'SIN': sin,
+                'Eligible': eligib,
                 'text': text} 
         df = pd.DataFrame(data)
         
@@ -104,10 +105,6 @@ class Model_Voice_Text():
         return df
     
     def transcribe(self, audio_f):
-        # sr, y = audio
-        # y = y.astype(np.float32)
-        # y /= np.max(np.abs(y))
-        # print(type(audio))
         text = ""
 
         # First load the file
@@ -127,23 +124,13 @@ class Model_Voice_Text():
                 buffer = samples_total - samples_wrote
 
             block = audio[samples_wrote : (samples_wrote + buffer)]
-            # out_filename = "split_" + str(counter) + "_" + audio_f
-
-            # Write 2 second segment
-            # sf.write(out_filename, block, sr)
-
-            # Transcribing the audio to text
             text += transcriber(block)["text"]
             counter += 1
             samples_wrote += buffer
-            # print(counter)
-            # print(text)
 
         return text
     
     def voice_to_text_s(self, audio):
-        # SR_obj = self.SR_obj
-        # info = sr.AudioFile(audio)
         tran_text = self.transcribe(audio)
         # print(tran_text)
         match_results = self.matching_text(tran_text.lower())
@@ -172,7 +159,3 @@ with demo:
     )
 
 demo.launch(debug=True)
-
-
-
-
