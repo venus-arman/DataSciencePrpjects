@@ -98,9 +98,7 @@ class Model_Voice_Text():
                 'Phone Number': ph_num,
                 'SIN': sin,
                 'text': text} 
-        print(data)
         df = pd.DataFrame(data)
-        print(df)
         
         # ret.append(text)
         return df
